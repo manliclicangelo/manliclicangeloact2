@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search for a Value</title>
+</head>
+<body bgcolor="#ffe6f0" text="#b5179e">
+
+    <table align="center" width="400" bgcolor="#ffffff" cellpadding="20" cellspacing="0" border="1" bordercolor="#ffb3c6">
+        <tr>
+            <td align="center">
+                <h2 style="color: #d63384;">Search for a Value</h2>
+
+                <p align="left">
+                    <b>Enter array values:</b><br>
+                    <input type="text" id="arrayInput" value="10, 20, 30, 40, 50" size="35">
+                </p>
+
+                <p align="left">
+                    <b>Value to search:</b><br>
+                    <input type="text" id="searchValue" value="10" size="35">
+                </p>
+
+                <br>
+                <button onclick="processSearch()">Search</button>
+
+                <br><br>
+                <hr color="#ffb3c6">
+
+                <div id="results" style="display: none;">
+                    <h3 style="color: #d63384;">Result</h3>
+                    <p id="searchMessage"></p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+    function processSearch() {
+        let arrayVal = document.getElementById("arrayInput").value;
+        let searchVal = document.getElementById("searchValue").value;
+
+        if (!arrayVal.trim() || !searchVal.trim()) {
+            alert("Please fill in both fields!");
+            return;
+        }
+
+        let rawArray = arrayVal.split(",");
+        let arr = [];
+        for (let i = 0; i < rawArray.length; i++) {
+            let num = Number(rawArray[i].trim());
+            if (!isNaN(num)) {
+                arr.push(num);
+            }
+        }
+
+        let target = Number(searchVal.trim());
+
+        let found = false;
+        let foundIndex = -1;
+
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] === target) {
+                found = true;
+                foundIndex = i;
+                break;
+            }
+        }
+
+        let searchMessage = document.getElementById("searchMessage");
+        if (found) {
+            searchMessage.innerHTML = "Value <b>" + target + "</b> was found at index <b>" + foundIndex + "</b>.";
+        } else {
+            searchMessage.innerHTML = "Value <b>" + target + "</b> does not exist in the array.";
+        }
+
+        document.getElementById("results").style.display = "block";
+    }
+    </script>
+
+</body>
+</html>
