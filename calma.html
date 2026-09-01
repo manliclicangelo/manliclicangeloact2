@@ -1,180 +1,312 @@
-import java.util.ArrayList;
-import java.util.Scanner;
-
-public class RestaurantReservationSystem {
-
-    static class Reservation {
-        int id;
-        String name;
-        String date;
-        String time;
-        int adults;
-        int children;
-
-        public Reservation(int id, String name, String date, String time, int adults, int children) {
-            this.id = id;
-            this.name = name;
-            this.date = date;
-            this.time = time;
-            this.adults = adults;
-            this.children = children;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOTA HUB</title>
+    <style>
+        :root {
+            --night: #0b0d10;
+            --panel: #151a1f;
+            --panel-light: #20282d;
+            --paper: #e9eee8;
+            --red: #d7443e;
+            --gold: #d5a65b;
+            --muted: #8f9b9c;
+            --line: #334047;
         }
-
-        public double getSubtotal() {
-            return (adults * 250) + (children * 100);
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            background: var(--night);
+            color: var(--paper);
+            font-family: Arial, sans-serif;
         }
-    }
+        .shell { min-height: 100vh; }
+        .topbar { height: 72px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 5vw, 72px); border-bottom: 1px solid var(--line); background: #11161a; }
+        .brand { display: flex; align-items: center; gap: 12px; color: var(--paper); font: 700 14px Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+        .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 2px solid var(--red); color: var(--gold); font: 700 20px Georgia, serif; transform: rotate(45deg); }
+        .brand-mark span { transform: rotate(-45deg); }
+        .nav { display: flex; gap: 28px; }
+        .nav button, .profile { border: 0; background: none; color: var(--muted); cursor: pointer; font: 700 11px Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+        .nav button.active, .nav button:hover { color: var(--gold); }
+        .profile { display: flex; align-items: center; gap: 10px; color: var(--paper); }
+        .avatar { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--red); color: white; }
+        .dashboard { width: min(1180px, 100%); margin: auto; padding: 42px clamp(20px, 5vw, 72px) 64px; }
+        .intro { display: flex; justify-content: space-between; align-items: end; gap: 28px; margin-bottom: 34px; }
+        .eyebrow { color: var(--gold); font: 700 11px Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+        h1 { margin: 10px 0 0; color: var(--paper); font: 400 clamp(34px, 5vw, 62px)/.98 Georgia, serif; }
+        .intro p { max-width: 310px; margin: 0; color: var(--muted); font: 14px/1.6 Arial, sans-serif; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 34px; }
+        .stat { padding: 17px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; text-align: left; }
+        .stat:hover { border-color: var(--gold); }
+        .stat strong { display: block; margin: 7px 0 4px; color: var(--paper); font: 700 22px Georgia, serif; }
+        .stat span { color: var(--muted); font: 10px Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+        .analytics { display: grid; grid-template-columns: 1.15fr .85fr; gap: 14px; margin: 34px 0; }
+        .data-panel { border: 1px solid var(--line); background: var(--panel); }
+        .panel-title { display: flex; align-items: center; justify-content: space-between; padding: 18px; border-bottom: 1px solid var(--line); }
+        .panel-title h2 { margin: 0; font: 400 22px Georgia, serif; }
+        .panel-title button { border: 0; background: none; color: var(--gold); cursor: pointer; font: 700 10px Arial, sans-serif; text-transform: uppercase; }
+        .meta-table { width: 100%; border-collapse: collapse; font: 12px Arial, sans-serif; }
+        .meta-table th { padding: 12px 18px; color: var(--muted); font-size: 10px; letter-spacing: 1px; text-align: left; text-transform: uppercase; }
+        .meta-table td { padding: 13px 18px; border-top: 1px solid rgba(51,64,71,.65); }
+        .meta-table tr { cursor: pointer; }
+        .meta-table tr:hover td { background: #202b30; color: var(--gold); }
+        .rank { color: var(--gold); font-weight: 700; }
+        .win { color: #7bc58c; }
+        .match-list { padding: 4px 18px 12px; }
+        .match { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(51,64,71,.65); cursor: pointer; }
+        .match:last-child { border-bottom: 0; }
+        .match:hover .teams { color: var(--gold); }
+        .teams { color: var(--paper); font: 700 12px/1.6 Arial, sans-serif; }
+        .teams small { display: block; color: var(--muted); font-weight: 400; }
+        .score { color: var(--red); font: 700 16px Georgia, serif; white-space: nowrap; }
+        .leaderboard { margin: 34px 0; }
+        .leader-row { display: grid; grid-template-columns: 38px 1fr 90px 65px; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid rgba(51,64,71,.65); cursor: pointer; font: 12px Arial, sans-serif; }
+        .leader-row:hover { background: #202b30; }
+        .leader-row span { color: var(--muted); }
+        .leader-row strong { color: var(--paper); }
+        .trend { color: #7bc58c !important; text-align: right; }
+        .featured { display: grid; grid-template-columns: 1.15fr .85fr; min-height: 320px; margin-bottom: 34px; overflow: hidden; border: 1px solid #503431; background: radial-gradient(circle at 70% 30%, #80392e, transparent 28%), linear-gradient(120deg, #321e25, #171a20); }
+        .featured-copy { align-self: end; padding: 34px; }
+        .featured h2 { margin: 10px 0; color: #fff1df; font: 400 clamp(34px, 5vw, 60px) Georgia, serif; }
+        .featured-copy p { max-width: 370px; color: #d2bdb3; font: 14px/1.6 Arial, sans-serif; }
+        .hero-emblem { display: grid; place-items: center; align-self: center; justify-self: center; width: 190px; height: 190px; border: 1px solid rgba(213,166,91,.7); border-radius: 50%; color: var(--gold); font: 700 72px Georgia, serif; box-shadow: 0 0 45px rgba(215,68,62,.35), inset 0 0 35px rgba(215,68,62,.25); }
+        .featured button, .match-button { margin-top: 14px; padding: 13px 19px; border: 0; background: var(--red); color: white; cursor: pointer; font: 700 11px Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+        .featured button:hover, .match-button:hover { background: #ef6654; }
+        .roster-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
+        .roster-head h2 { margin: 0; font: 400 27px Georgia, serif; }
+        .search { width: min(250px, 45%); height: 38px; padding: 0 13px; border: 1px solid var(--line); background: var(--panel); color: var(--paper); font: 13px Arial, sans-serif; }
+        .search:focus { outline: 2px solid rgba(213,166,91,.5); }
+        .filters { display: flex; gap: 8px; margin-bottom: 18px; }
+        .filter { padding: 8px 13px; border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer; font: 700 10px Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+        .filter.active, .filter:hover { border-color: var(--gold); color: var(--gold); }
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .hero-card { min-height: 180px; padding: 16px; border: 1px solid var(--line); background: linear-gradient(155deg, var(--panel-light), var(--panel)); cursor: pointer; transition: transform .18s, border-color .18s; }
+        .hero-card:hover, .hero-card.selected { border-color: var(--gold); transform: translateY(-4px); }
+        .hero-icon { display: block; width: 100%; height: 92px; margin-bottom: 14px; border: 1px solid #b84d42; background: #302025; object-fit: cover; object-position: center 20%; }
+        .hero-icon.fallback, .item-icon.fallback { display: grid; place-items: center; color: #edb56c; font: 700 22px Georgia, serif; }
+        .hero-card h3 { margin: 0 0 6px; color: var(--paper); font: 700 15px Arial, sans-serif; }
+        .hero-card p { margin: 0; color: var(--muted); font: 11px Arial, sans-serif; text-transform: uppercase; }
+        .hero-function, .item-function { display: block; margin-top: 9px; color: #b8c1bf; font: 11px/1.35 Arial, sans-serif; text-transform: none; }
+        .items-section { margin-top: 42px; padding-top: 32px; border-top: 1px solid var(--line); }
+        .item-card { min-height: 155px; padding: 16px; border: 1px solid var(--line); background: linear-gradient(155deg, #252b2e, #151a1f); color: var(--paper); cursor: pointer; text-align: left; transition: transform .18s, border-color .18s; }
+        .item-card:hover, .item-card.selected { border-color: var(--red); transform: translateY(-4px); }
+        .item-icon { display: block; width: 66px; height: 66px; margin-bottom: 14px; border: 1px solid var(--gold); background: #30251c; color: var(--gold); object-fit: cover; }
+        .item-card h3 { margin: 0 0 7px; font: 700 14px Arial, sans-serif; }
+        .item-card p { margin: 0; color: var(--muted); font: 11px Arial, sans-serif; }
+        .item-detail { min-height: 20px; margin-top: 18px; color: var(--gold); font: 13px Arial, sans-serif; }
+        .empty { grid-column: 1 / -1; padding: 24px; border: 1px dashed var(--line); color: var(--muted); text-align: center; font: 13px Arial, sans-serif; }
+        .status { min-height: 20px; margin-top: 22px; color: var(--gold); font: 13px Arial, sans-serif; }
+        button:focus-visible, input:focus-visible { outline: 3px solid rgba(213,166,91,.6); outline-offset: 3px; }
+        @media (max-width: 800px) { .nav { display: none; } .intro { display: block; } .intro p { margin-top: 16px; } .stats, .analytics { grid-template-columns: repeat(2, 1fr); } .analytics, .featured { grid-template-columns: 1fr; } .hero-emblem { display: none; } .cards { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 430px) { .topbar { padding: 0 16px; } .brand { font-size: 11px; letter-spacing: 1px; } .dashboard { padding: 30px 16px 45px; } .roster-head { align-items: start; flex-direction: column; } .search { width: 100%; } .filters { overflow-x: auto; } }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <header class="topbar">
+            <div class="brand"><span class="brand-mark"><span>D</span></span> DOTES UPDATE</div>
+            <nav class="nav" aria-label="Main navigation">
+                <button class="active" type="button" data-nav="heroes">Heroes</button>
+                <button type="button" data-nav="items">Items</button>
+                <button type="button" data-nav="matches">Matches</button>
+                <button type="button" data-nav="leaderboard">Leaderboard</button>
+            </nav>
+            <button class="profile" type="button" data-action="profile"><span class="avatar">P</span> GeloAbat</button>
+        </header>
+        <section class="dashboard">
+            <div class="intro">
+                <div><div class="eyebrow">Battle hub / hero select</div><h1>Ready your arsenal.</h1></div>
+                <p>Pick a hero, find your role, and make the next play count.</p>
+            </div>
+            <section class="stats" aria-label="Dota meta overview">
+                <button class="stat" type="button" data-stat="patch"><span>Current patch</span><strong>7.41e</strong><span>32 days ago</span></button>
+                <button class="stat" type="button" data-stat="matches"><span>Analyzed matches</span><strong>50.6K</strong><span>Last 8 days</span></button>
+                <button class="stat" type="button" data-stat="radiant"><span>Radiant win rate</span><strong>53.5%</strong><span>40-60% scale</span></button>
+                <button class="stat" type="button" data-stat="contested"><span>Most contested</span><strong>Pudge</strong><span>71% contested</span></button>
+            </section>
+            <section class="analytics">
+                <div class="data-panel">
+                    <div class="panel-title"><h2>Hero meta / 7.41e</h2><button type="button" data-action="meta">Full meta</button></div>
+                    <table class="meta-table"><thead><tr><th># Hero</th><th>Matches</th><th>Win</th><th>D2PT</th></tr></thead><tbody>
+                        <tr data-meta="Shadow Fiend"><td><span class="rank">01</span> Shadow Fiend</td><td>14.1K</td><td class="win">49.2%</td><td>3043</td></tr>
+                        <tr data-meta="Pudge"><td><span class="rank">02</span> Pudge</td><td>13.2K</td><td class="win">50.0%</td><td>2951</td></tr>
+                        <tr data-meta="Rubick"><td><span class="rank">03</span> Rubick</td><td>12.5K</td><td class="win">49.9%</td><td>3173</td></tr>
+                        <tr data-meta="Bounty Hunter"><td><span class="rank">04</span> Bounty Hunter</td><td>11.2K</td><td class="win">56.3%</td><td>3422</td></tr>
+                    </tbody></table>
+                </div>
+                <div class="data-panel">
+                    <div class="panel-title"><h2>Recent pro matches</h2><button type="button" data-action="matches">See all</button></div>
+                    <div class="match-list">
+                        <div class="match" data-match="EPL Masters"><div class="teams">Inner Circle x Insanity<small>vs Team Lynx · EPL Masters</small></div><div class="score">1 : 0</div></div>
+                        <div class="match" data-match="PuckChamp"><div class="teams">PuckChamp<small>vs Klim Sani4 · 4h ago</small></div><div class="score">0 : 2</div></div>
+                        <div class="match" data-match="Spirit Academy"><div class="teams">Team Spirit Academy<small>vs Pipsqueak · 16h ago</small></div><div class="score">2 : 1</div></div>
+                    </div>
+                </div>
+            </section>
+            <section class="data-panel leaderboard">
+                <div class="panel-title"><h2>The top of the game, right now</h2><button type="button" data-action="leaderboard">Full leaderboard</button></div>
+                <div class="leader-row"><span>#</span><span>Player</span><span>Best rank</span><span>Trend</span></div>
+                <div class="leader-row" data-player="Shad"><span class="rank">01</span><strong>Shad <span>· Team Secret</span></strong><span>1</span><span class="trend">+2</span></div>
+                <div class="leader-row" data-player="Niku"><span class="rank">02</span><strong>Niku <span>· NAVI</span></strong><span>17</span><span class="trend">=</span></div>
+                <div class="leader-row" data-player="Topson"><span class="rank">03</span><strong>Topson <span>· Free Agent</span></strong><span>6</span><span class="trend">-1</span></div>
+            </section>
+            <section class="featured">
+                <div class="featured-copy"><div class="eyebrow">Featured hero / selected</div><h2 id="featured-name">Invoker</h2><p id="featured-description">A master of the arcane arts. Wield three elements and create the impossible.</p><button type="button" data-action="details">View hero details</button></div>
+                <div class="hero-emblem" id="featured-emblem" aria-hidden="true">I</div>
+            </section>
+            <div class="roster-head"><h2>Hero roster</h2><input class="search" id="hero-search" type="search" placeholder="Search heroes..." aria-label="Search heroes"></div>
+            <div class="filters" role="group" aria-label="Filter heroes by role">
+                <button class="filter active" type="button" data-role="all">All heroes</button>
+                <button class="filter" type="button" data-role="carry">Carry</button>
+                <button class="filter" type="button" data-role="support">Support</button>
+                <button class="filter" type="button" data-role="mid">Mid lane</button>
+                <button class="filter" type="button" data-role="offlane">Offlane</button>
+            </div>
+            <div class="cards" id="hero-cards"></div>
+            <button class="match-button" type="button" data-action="match">Find a match</button>
+            <div class="status" id="status" role="status" aria-live="polite"></div>
+            <section class="items-section">
+                <div class="roster-head"><h2>Item shop</h2><input class="search" id="item-search" type="search" placeholder="Search items..." aria-label="Search items"></div>
+                <div class="cards" id="item-cards"></div>
+                <div class="item-detail" id="item-detail" aria-live="polite">Select an item to inspect its build path.</div>
+            </section>
+        </section>
+    </main>
 
-    static ArrayList<Reservation> reservations = new ArrayList<>();
-    static Scanner sc = new Scanner(System.in);
-    static int counter = 1;
-
-    public static void main(String[] args) {
-        // Sample data
-        reservations.add(new Reservation(counter++, "Angelo", "Nov 10, 2025", "10:00 am", 1, 1));
-        reservations.add(new Reservation(counter++, "Raphael", "Nov 12, 2025", "11:00 am", 2, 1));
-        reservations.add(new Reservation(counter++, "Lalaine", "Nov 1, 2025", "9:00 am", 2, 2));
-        reservations.add(new Reservation(counter++, "Sam", "Nov 6, 2025", "12:00 pm", 1, 2));
-
-        while (true) {
-            System.out.println("\n=======================================");
-            System.out.println("   RESTAURANT DINING RESERVATION SYSTEM");
-            System.out.println("=======================================");
-            System.out.println("k. View All Reservations");
-            System.out.println("l. Make A Reservation");
-            System.out.println("m. Delete A Reservation");
-            System.out.println("n. Generate Reservation Report");
-            System.out.println("o. Exit Application");
-            System.out.print("\nSelect option (k-o): ");
-
-            String choice = sc.nextLine().trim().toLowerCase();
-
-            switch (choice) {
-                case "k":
-                    viewReservations();
-                    break;
-                case "l":
-                    makeReservation();
-                    break;
-                case "m":
-                    deleteReservation();
-                    break;
-                case "n":
-                    generateReport();
-                    break;
-                case "o":
-                    System.out.println("\nThank you!");
-                    System.exit(0);
-                    break;
-                default:
-                    System.out.println("Invalid option. Try again!");
+    <script>
+        const heroes = [
+            { name: "Invoker", role: "mid", letter: "I", description: "A master of the arcane arts. Wield three elements and create the impossible." },
+            { name: "Juggernaut", role: "carry", letter: "J", description: "A masked blade dancer who turns every fight into a deadly performance." },
+            { name: "Crystal Maiden", role: "support", letter: "C", description: "A frost-born mage who locks down enemies and empowers every spellcaster." },
+            { name: "Axe", role: "offlane", letter: "A", description: "A fearless frontliner who calls the battle and refuses to fall." },
+            { name: "Lina", role: "mid", letter: "L", description: "The Slayer brings fire, speed, and a devastating finishing strike." },
+            { name: "Phantom Assassin", role: "carry", letter: "P", description: "A silent blur of blades with a talent for finding the perfect target." },
+            { name: "Dazzle", role: "support", letter: "D", description: "A shadow priest who bends the line between life and death." },
+            { name: "Mars", role: "offlane", letter: "M", description: "The God of War turns the battlefield into his personal arena." },
+            { name: "Pudge", role: "support", letter: "P", description: "Hooks enemies from range, isolates targets, and controls the fight with Rot." },
+            { name: "Shadow Fiend", role: "carry", letter: "S", description: "Harvests souls for damage and clears waves before melting enemy heroes." },
+            { name: "Rubick", role: "support", letter: "R", description: "Steals enemy spells and turns the opponents' best abilities against them." },
+            { name: "Phantom Lancer", role: "carry", letter: "L", description: "Creates an army of illusions that overwhelms enemies in long fights." },
+            { name: "Earthshaker", role: "support", letter: "E", description: "Stuns lanes and teamfights with fissures, totems, and echoing damage." },
+            { name: "Queen of Pain", role: "mid", letter: "Q", description: "Uses blink mobility and burst magic to punish heroes caught alone." },
+            { name: "Tidehunter", role: "offlane", letter: "T", description: "Soaks damage and opens teamfights with a huge area stun." },
+            { name: "Lich", role: "support", letter: "L", description: "Slows enemies and bounces a deadly Chain Frost through clustered teams." }
+        ];
+        const items = [
+            { name: "Blink Dagger", letter: "B", cost: "2250 gold", detail: "Instantly reposition yourself across the battlefield." },
+            { name: "Black King Bar", letter: "K", cost: "4050 gold", detail: "Gain spell immunity and turn the fight in your favor." },
+            { name: "Aghanim's Scepter", letter: "A", cost: "4200 gold", detail: "Upgrade your ultimate ability and unlock new power." },
+            { name: "Butterfly", letter: "F", cost: "5450 gold", detail: "Massive agility, damage, and evasion for carries." },
+            { name: "Force Staff", letter: "F", cost: "2200 gold", detail: "Push any unit forward and escape dangerous situations." },
+            { name: "Desolator", letter: "D", cost: "3500 gold", detail: "Strike through armor with devastating physical damage." },
+            { name: "Mekansm", letter: "M", cost: "1775 gold", detail: "Restore health and protect your team during clashes." },
+            { name: "Refresher Orb", letter: "R", cost: "5000 gold", detail: "Reset your cooldowns and cast your biggest spells again." },
+            { name: "Satanic", letter: "S", cost: "5050 gold", detail: "Gain lifesteal and activate Unholy Rage for a powerful emergency heal." },
+            { name: "Radiance", letter: "R", cost: "5050 gold", detail: "Burn nearby enemies and gain a chance to make attacks miss." },
+            { name: "Manta Style", letter: "M", cost: "4600 gold", detail: "Create illusions, dispel debuffs, and dodge incoming projectiles." },
+            { name: "Heart of Tarrasque", letter: "H", cost: "5200 gold", detail: "Gain a huge health pool and recover health rapidly out of combat." },
+            { name: "Scythe of Vyse", letter: "S", cost: "5200 gold", detail: "Hex an enemy into a harmless creature, disabling them completely." },
+            { name: "Shiva's Guard", letter: "S", cost: "4850 gold", detail: "Gain armor and release an Arctic Blast that slows nearby enemies." },
+            { name: "Lotus Orb", letter: "L", cost: "3850 gold", detail: "Reflect targeted spells and provide armor with a strong dispel." },
+            { name: "Aeon Disk", letter: "A", cost: "3000 gold", detail: "Prevent a lethal burst and briefly become harder to kill." },
+            { name: "Boots of Travel", letter: "B", cost: "2500 gold", detail: "Move faster and teleport to allied units or structures." },
+            { name: "Moon Shard", letter: "M", cost: "4000 gold", detail: "Boost attack speed and consume it for permanent night vision." },
+            { name: "Aether Lens", letter: "A", cost: "2275 gold", detail: "Increase cast range and mana regeneration for spellcasters." }
+        ];
+        const heroSlugs = { "Invoker": "invoker", "Juggernaut": "juggernaut", "Crystal Maiden": "crystal_maiden", "Axe": "axe", "Lina": "lina", "Phantom Assassin": "phantom_assassin", "Dazzle": "dazzle", "Mars": "mars", "Pudge": "pudge", "Shadow Fiend": "nevermore", "Rubick": "rubick", "Phantom Lancer": "phantom_lancer", "Earthshaker": "earthshaker", "Queen of Pain": "queenofpain", "Tidehunter": "tidehunter", "Lich": "lich" };
+        const itemSlugs = { "Blink Dagger": "blink", "Black King Bar": "black_king_bar", "Aghanim's Scepter": "ultimate_scepter", "Butterfly": "butterfly", "Force Staff": "force_staff", "Desolator": "desolator", "Mekansm": "mekansm", "Refresher Orb": "refresher", "Satanic": "satanic", "Radiance": "radiance", "Manta Style": "manta", "Heart of Tarrasque": "heart", "Scythe of Vyse": "sheepstick", "Shiva's Guard": "shivas_guard", "Lotus Orb": "lotus_orb", "Aeon Disk": "aeon_disk", "Boots of Travel": "travel_boots", "Moon Shard": "moon_shard", "Aether Lens": "aether_lens" };
+        heroes.forEach((hero) => { hero.img = `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${heroSlugs[hero.name]}.png`; });
+        items.forEach((item) => { item.img = `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/${itemSlugs[item.name]}.png`; });
+        const status = document.getElementById("status");
+        let activeRole = "all";
+        const setStatus = (message) => { status.textContent = message; };
+        function renderHeroes() {
+            const query = document.getElementById("hero-search").value.toLowerCase();
+            const visible = heroes.filter((hero) => (activeRole === "all" || hero.role === activeRole) && hero.name.toLowerCase().includes(query));
+            document.getElementById("hero-cards").innerHTML = visible.length ? visible.map((hero) => `<button class="hero-card" type="button" data-hero="${hero.name}">${hero.img ? `<img class="hero-icon" src="${hero.img}" alt="${hero.name}">` : `<span class="hero-icon fallback">${hero.letter}</span>`}<h3>${hero.name}</h3><p>${hero.role}</p><small class="hero-function">${hero.description}</small></button>`).join("") : '<div class="empty">No heroes found in this role.</div>';
+            document.querySelectorAll("[data-hero]").forEach((card) => card.addEventListener("click", () => selectHero(card.dataset.hero)));
+            attachImageFallback("#hero-cards", "hero-icon");
+        }
+        function selectHero(name) {
+            const hero = heroes.find((item) => item.name === name);
+            document.getElementById("featured-name").textContent = hero.name;
+            document.getElementById("featured-description").textContent = hero.description;
+            document.getElementById("featured-emblem").textContent = hero.letter;
+            document.querySelectorAll(".hero-card").forEach((card) => card.classList.toggle("selected", card.dataset.hero === name));
+            setStatus(`${hero.name} selected. Your battle plan is ready.`);
+        }
+        function renderItems() {
+            const query = document.getElementById("item-search").value.toLowerCase();
+            const visible = items.filter((item) => item.name.toLowerCase().includes(query));
+            document.getElementById("item-cards").innerHTML = visible.length ? visible.map((item) => `<button class="item-card" type="button" data-item="${item.name}">${item.img ? `<img class="item-icon" src="${item.img}" alt="${item.name}">` : `<span class="item-icon fallback">${item.letter}</span>`}<h3>${item.name}</h3><p>${item.cost}</p><small class="item-function">${item.detail}</small></button>`).join("") : '<div class="empty">No items found in the shop.</div>';
+            document.querySelectorAll("[data-item]").forEach((card) => card.addEventListener("click", () => selectItem(card.dataset.item)));
+            attachImageFallback("#item-cards", "item-icon");
+        }
+        function attachImageFallback(containerSelector, className) {
+            document.querySelectorAll(`${containerSelector} img`).forEach((image) => image.addEventListener("error", () => {
+                const fallback = document.createElement("span");
+                fallback.className = `${className} fallback`;
+                fallback.textContent = image.alt.charAt(0);
+                image.replaceWith(fallback);
+            }, { once: true }));
+        }
+        function selectItem(name) {
+            const item = items.find((entry) => entry.name === name);
+            document.querySelectorAll(".item-card").forEach((card) => card.classList.toggle("selected", card.dataset.item === name));
+            document.getElementById("item-detail").textContent = `${item.name}: ${item.detail}`;
+            setStatus(`${item.name} added to your build plan.`);
+        }
+        document.querySelectorAll("[data-role]").forEach((filter) => filter.addEventListener("click", () => { activeRole = filter.dataset.role; document.querySelectorAll(".filter").forEach((item) => item.classList.toggle("active", item === filter)); renderHeroes(); }));
+        document.getElementById("hero-search").addEventListener("input", renderHeroes);
+        document.getElementById("item-search").addEventListener("input", renderItems);
+        document.querySelectorAll("[data-stat]").forEach((stat) => stat.addEventListener("click", () => setStatus(`${stat.querySelector("strong").textContent} overview opened.`)));
+        document.querySelectorAll("[data-meta]").forEach((row) => row.addEventListener("click", () => setStatus(`${row.dataset.meta} meta profile opened.`)));
+        document.querySelectorAll("[data-match]").forEach((match) => match.addEventListener("click", () => setStatus(`${match.dataset.match} match details opened.`)));
+        document.querySelectorAll("[data-player]").forEach((player) => player.addEventListener("click", () => setStatus(`${player.dataset.player} player profile opened.`)));
+        document.querySelector('[data-action="meta"]').addEventListener("click", () => setStatus("Full hero meta opened."));
+        document.querySelector('[data-action="matches"]').addEventListener("click", () => setStatus("All stacked matches opened."));
+        document.querySelector('[data-action="leaderboard"]').addEventListener("click", () => setStatus("Full leaderboard opened."));
+        document.querySelector('[data-action="details"]').addEventListener("click", () => setStatus(`${document.getElementById("featured-name").textContent}: hero details opened.`));
+        document.querySelector('[data-action="match"]').addEventListener("click", () => setStatus("Searching for a balanced match... Queue status: finding players."));
+        document.querySelector('[data-action="profile"]').addEventListener("click", () => setStatus("Player One profile selected. MMR: 2,450."));
+        document.querySelectorAll("[data-nav]").forEach((item) => item.addEventListener("click", () => { document.querySelectorAll("[data-nav]").forEach((nav) => nav.classList.toggle("active", nav === item)); setStatus(`${item.textContent} section selected.`); if (item.dataset.nav === "items") document.querySelector(".items-section").scrollIntoView({ behavior: "smooth" }); }));
+        renderHeroes();
+        renderItems();
+        loadDotaCatalog();
+        async function loadDotaCatalog() {
+            try {
+                const [heroResponse, itemResponse] = await Promise.all([
+                    fetch("https://api.opendota.com/api/heroStats"),
+                    fetch("https://raw.githubusercontent.com/odota/dotaconstants/master/build/items.json")
+                ]);
+                if (!heroResponse.ok || !itemResponse.ok) throw new Error("Catalog unavailable");
+                const remoteHeroes = await heroResponse.json();
+                const remoteItems = await itemResponse.json();
+                heroes.splice(0, heroes.length, ...remoteHeroes.map((hero) => ({
+                    name: hero.localized_name,
+                    role: hero.primary_attr === "str" ? "offlane" : hero.primary_attr === "agi" ? "carry" : "mid",
+                    letter: hero.localized_name.charAt(0),
+                    description: `${hero.attack_type} hero · ${hero.roles.slice(0, 2).join(" / ")}`,
+                    img: `https://cdn.cloudflare.steamstatic.com${hero.img}`
+                })));
+                const catalogItems = Object.values(remoteItems).filter((item) => (item.dname || item.localized_name) && !item.dname?.toLowerCase().includes("recipe")).map((item) => ({
+                    name: item.dname || item.localized_name,
+                    letter: (item.dname || "Item").charAt(0),
+                    cost: item.cost ? `${item.cost} gold` : "Neutral item",
+                    detail: item.abilities?.[0]?.description ? item.abilities[0].description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").slice(0, 120) : "DOTA 2 item effect and build component.",
+                    img: `https://cdn.cloudflare.steamstatic.com${item.img}`
+                }));
+                if (catalogItems.length) items.splice(0, items.length, ...catalogItems);
+                renderHeroes();
+                renderItems();
+                setStatus(`Full catalog loaded: ${heroes.length} heroes and ${items.length} items.`);
+            } catch (error) {
+                setStatus(`Offline catalog active: ${heroes.length} heroes and ${items.length} items available.`);
             }
         }
-    }
-
-    static void viewReservations() {
-        if (reservations.isEmpty()) {
-            System.out.println("\nNo reservations found.");
-            return;
-        }
-
-        System.out.println("\n-----------------------------------------------");
-        System.out.printf("%-4s %-12s %-8s %-20s %-8s %-8s\n", "#", "Date", "Time", "Name", "Adults", "Children");
-        System.out.println("-----------------------------------------------");
-
-        for (Reservation r : reservations) {
-            System.out.printf("%-4d %-12s %-8s %-20s %-8d %-8d\n",
-                    r.id, r.date, r.time, r.name, r.adults, r.children);
-        }
-        System.out.println("-----------------------------------------------");
-    }
-
-    static void makeReservation() {
-        try {
-            System.out.print("\nEnter Name: ");
-            String name = sc.nextLine();
-
-            System.out.print("Enter Date (e.g., Sep 10, 2021): ");
-            String date = sc.nextLine();
-
-            System.out.print("Enter Time (e.g., 10:00 am): ");
-            String time = sc.nextLine();
-
-            System.out.print("Enter No. of Adults: ");
-            int adults = Integer.parseInt(sc.nextLine());
-
-            System.out.print("Enter No. of Children: ");
-            int children = Integer.parseInt(sc.nextLine());
-
-            if (adults < 0 || children < 0) {
-                System.out.println("Error: Numbers cannot be negative!");
-                return;
-            }
-
-            reservations.add(new Reservation(counter++, name, date, time, adults, children));
-            System.out.println("\nReservation added successfully!");
-
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Please enter valid numbers for adults/children!");
-        }
-    }
-
-    static void deleteReservation() {
-        if (reservations.isEmpty()) {
-            System.out.println("\nNo reservation to delete.");
-            return;
-        }
-
-        try {
-            System.out.print("\nEnter Reservation # to delete: ");
-            int id = Integer.parseInt(sc.nextLine());
-
-            boolean found = false;
-            for (int i = 0; i < reservations.size(); i++) {
-                if (reservations.get(i).id == id) {
-                    reservations.remove(i);
-                    System.out.println("Reservation deleted successfully!");
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) System.out.println("Reservation not found.");
-
-        } catch (NumberFormatException e) {
-            System.out.println("Error: Invalid input!");
-        }
-    }
-
-    static void generateReport() {
-        if (reservations.isEmpty()) {
-            System.out.println("\nNo reservations to report.");
-            return;
-        }
-
-        double total = 0;
-        int totalAdults = 0;
-        int totalKids = 0;
-
-        System.out.println("\n-------------------- REPORT --------------------");
-        System.out.printf("%-4s %-12s %-8s %-20s %-8s %-8s %-10s\n",
-                "#", "Date", "Time", "Name", "Adults", "Children", "Subtotal");
-
-        for (Reservation r : reservations) {
-            double sub = r.getSubtotal();
-            total += sub;
-            totalAdults += r.adults;
-            totalKids += r.children;
-
-            System.out.printf("%-4d %-12s %-8s %-20s %-8d %-8d %-10.2f\n",
-                    r.id, r.date, r.time, r.name, r.adults, r.children, sub);
-        }
-
-        System.out.println("------------------------------------------------");
-        System.out.println("Total Number of Adults: " + totalAdults);
-        System.out.println("Total Number of Kids: " + totalKids);
-        System.out.println("Grand Total: PHP " + total);
-        System.out.println("------------------------------------------------");
-        System.out.println("-------------- nothing follows -----------------");
-    }
-}
+    </script>
+</body>
+</html>
