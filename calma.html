@@ -1,81 +1,180 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Search for a Value</title>
-</head>
-<body bgcolor="#ffe6f0" text="#b5179e">
+import java.util.ArrayList;
+import java.util.Scanner;
 
-    <table align="center" width="400" bgcolor="#ffffff" cellpadding="20" cellspacing="0" border="1" bordercolor="#ffb3c6">
-        <tr>
-            <td align="center">
-                <h2 style="color: #d63384;">Search for a Value</h2>
+public class RestaurantReservationSystem {
 
-                <p align="left">
-                    <b>Enter array values:</b><br>
-                    <input type="text" id="arrayInput" value="10, 20, 30, 40, 50" size="35">
-                </p>
+    static class Reservation {
+        int id;
+        String name;
+        String date;
+        String time;
+        int adults;
+        int children;
 
-                <p align="left">
-                    <b>Value to search:</b><br>
-                    <input type="text" id="searchValue" value="10" size="35">
-                </p>
+        public Reservation(int id, String name, String date, String time, int adults, int children) {
+            this.id = id;
+            this.name = name;
+            this.date = date;
+            this.time = time;
+            this.adults = adults;
+            this.children = children;
+        }
 
-                <br>
-                <button onclick="processSearch()">Search</button>
+        public double getSubtotal() {
+            return (adults * 250) + (children * 100);
+        }
+    }
 
-                <br><br>
-                <hr color="#ffb3c6">
+    static ArrayList<Reservation> reservations = new ArrayList<>();
+    static Scanner sc = new Scanner(System.in);
+    static int counter = 1;
 
-                <div id="results" style="display: none;">
-                    <h3 style="color: #d63384;">Result</h3>
-                    <p id="searchMessage"></p>
-                </div>
-            </td>
-        </tr>
-    </table>
+    public static void main(String[] args) {
+        // Sample data
+        reservations.add(new Reservation(counter++, "Angelo", "Nov 10, 2025", "10:00 am", 1, 1));
+        reservations.add(new Reservation(counter++, "Raphael", "Nov 12, 2025", "11:00 am", 2, 1));
+        reservations.add(new Reservation(counter++, "Lalaine", "Nov 1, 2025", "9:00 am", 2, 2));
+        reservations.add(new Reservation(counter++, "Sam", "Nov 6, 2025", "12:00 pm", 1, 2));
 
-    <script>
-    function processSearch() {
-        let arrayVal = document.getElementById("arrayInput").value;
-        let searchVal = document.getElementById("searchValue").value;
+        while (true) {
+            System.out.println("\n=======================================");
+            System.out.println("   RESTAURANT DINING RESERVATION SYSTEM");
+            System.out.println("=======================================");
+            System.out.println("k. View All Reservations");
+            System.out.println("l. Make A Reservation");
+            System.out.println("m. Delete A Reservation");
+            System.out.println("n. Generate Reservation Report");
+            System.out.println("o. Exit Application");
+            System.out.print("\nSelect option (k-o): ");
 
-        if (!arrayVal.trim() || !searchVal.trim()) {
-            alert("Please fill in both fields!");
+            String choice = sc.nextLine().trim().toLowerCase();
+
+            switch (choice) {
+                case "k":
+                    viewReservations();
+                    break;
+                case "l":
+                    makeReservation();
+                    break;
+                case "m":
+                    deleteReservation();
+                    break;
+                case "n":
+                    generateReport();
+                    break;
+                case "o":
+                    System.out.println("\nThank you!");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again!");
+            }
+        }
+    }
+
+    static void viewReservations() {
+        if (reservations.isEmpty()) {
+            System.out.println("\nNo reservations found.");
             return;
         }
 
-        let rawArray = arrayVal.split(",");
-        let arr = [];
-        for (let i = 0; i < rawArray.length; i++) {
-            let num = Number(rawArray[i].trim());
-            if (!isNaN(num)) {
-                arr.push(num);
-            }
+        System.out.println("\n-----------------------------------------------");
+        System.out.printf("%-4s %-12s %-8s %-20s %-8s %-8s\n", "#", "Date", "Time", "Name", "Adults", "Children");
+        System.out.println("-----------------------------------------------");
+
+        for (Reservation r : reservations) {
+            System.out.printf("%-4d %-12s %-8s %-20s %-8d %-8d\n",
+                    r.id, r.date, r.time, r.name, r.adults, r.children);
         }
-
-        let target = Number(searchVal.trim());
-
-        let found = false;
-        let foundIndex = -1;
-
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i] === target) {
-                found = true;
-                foundIndex = i;
-                break;
-            }
-        }
-
-        let searchMessage = document.getElementById("searchMessage");
-        if (found) {
-            searchMessage.innerHTML = "Value <b>" + target + "</b> was found at index <b>" + foundIndex + "</b>.";
-        } else {
-            searchMessage.innerHTML = "Value <b>" + target + "</b> does not exist in the array.";
-        }
-
-        document.getElementById("results").style.display = "block";
+        System.out.println("-----------------------------------------------");
     }
-    </script>
 
-</body>
-</html>
+    static void makeReservation() {
+        try {
+            System.out.print("\nEnter Name: ");
+            String name = sc.nextLine();
+
+            System.out.print("Enter Date (e.g., Sep 10, 2021): ");
+            String date = sc.nextLine();
+
+            System.out.print("Enter Time (e.g., 10:00 am): ");
+            String time = sc.nextLine();
+
+            System.out.print("Enter No. of Adults: ");
+            int adults = Integer.parseInt(sc.nextLine());
+
+            System.out.print("Enter No. of Children: ");
+            int children = Integer.parseInt(sc.nextLine());
+
+            if (adults < 0 || children < 0) {
+                System.out.println("Error: Numbers cannot be negative!");
+                return;
+            }
+
+            reservations.add(new Reservation(counter++, name, date, time, adults, children));
+            System.out.println("\nReservation added successfully!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Please enter valid numbers for adults/children!");
+        }
+    }
+
+    static void deleteReservation() {
+        if (reservations.isEmpty()) {
+            System.out.println("\nNo reservation to delete.");
+            return;
+        }
+
+        try {
+            System.out.print("\nEnter Reservation # to delete: ");
+            int id = Integer.parseInt(sc.nextLine());
+
+            boolean found = false;
+            for (int i = 0; i < reservations.size(); i++) {
+                if (reservations.get(i).id == id) {
+                    reservations.remove(i);
+                    System.out.println("Reservation deleted successfully!");
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) System.out.println("Reservation not found.");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid input!");
+        }
+    }
+
+    static void generateReport() {
+        if (reservations.isEmpty()) {
+            System.out.println("\nNo reservations to report.");
+            return;
+        }
+
+        double total = 0;
+        int totalAdults = 0;
+        int totalKids = 0;
+
+        System.out.println("\n-------------------- REPORT --------------------");
+        System.out.printf("%-4s %-12s %-8s %-20s %-8s %-8s %-10s\n",
+                "#", "Date", "Time", "Name", "Adults", "Children", "Subtotal");
+
+        for (Reservation r : reservations) {
+            double sub = r.getSubtotal();
+            total += sub;
+            totalAdults += r.adults;
+            totalKids += r.children;
+
+            System.out.printf("%-4d %-12s %-8s %-20s %-8d %-8d %-10.2f\n",
+                    r.id, r.date, r.time, r.name, r.adults, r.children, sub);
+        }
+
+        System.out.println("------------------------------------------------");
+        System.out.println("Total Number of Adults: " + totalAdults);
+        System.out.println("Total Number of Kids: " + totalKids);
+        System.out.println("Grand Total: PHP " + total);
+        System.out.println("------------------------------------------------");
+        System.out.println("-------------- nothing follows -----------------");
+    }
+}
